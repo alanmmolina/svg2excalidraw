@@ -2,8 +2,6 @@ services:
   - type: web
     name: svg2excalidraw
     runtime: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn source.svg2excalidraw.app:app --host 0.0.0.0 --port $PORT
-    envVars:
-      - key: PYTHON_VERSION
-        value: "3.13.2"
+    buildCommand: uv sync --no-dev
+    startCommand: uv run uvicorn svg2excalidraw.app:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
