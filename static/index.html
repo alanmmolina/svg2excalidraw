@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>svg2excalidraw</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/feather-icons/dist/feather.min.js"></script>
+  <style>
+    @font-face {
+      font-family: "Excalifont";
+      src: url("https://excalidraw.nyc3.cdn.digitaloceanspaces.com/fonts/Excalifont-Regular.woff2") format("woff2");
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --light:     #09090b;
+      --lightgray: #292929;
+      --gray:      #727272;
+      --darkgray:  #eaeaea;
+      --dark:      #fafafa;
+      --secondary: #fafafa;
+      --body:      "Roboto", system-ui, sans-serif;
+      --code:      "Fira Code", ui-monospace, monospace;
+      --excali:    "Excalifont", cursive;
+      --radius:    5px;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--light);
+      color: var(--darkgray);
+      font-family: var(--body);
+      font-size: 14px;
+    }
+
+    /* ── Layout ───────────────────────────────────────────────────────────── */
+
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 24px 32px 0;
+      border-bottom: 1px solid var(--lightgray);
+      padding-bottom: 16px;
+    }
+
+    .brand h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--dark);
+      font-family: var(--code);
+      letter-spacing: -0.3px;
+      position: relative;
+      cursor: default;
+    }
+
+    .brand h1[data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 0;
+      white-space: nowrap;
+      background: #1e1e1e;
+      border: 1px solid #3a3a3a;
+      color: var(--gray);
+      font-family: var(--body);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0;
+      border-radius: var(--radius);
+      padding: 5px 9px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+      z-index: 10;
+    }
+
+    .brand h1[data-tooltip]:hover::after {
+      opacity: 1;
+    }
+
+    .path { color: var(--gray); }
+
+
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 0;
+      padding: 24px;
+      min-height: 0;
+    }
+
+    /* ── Pane ─────────────────────────────────────────────────────────────── */
+
+    .pane {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+
+    .pane-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px;
+      background: var(--lightgray);
+      border: 1px solid var(--lightgray);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+
+    .pane-header label {
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    .pane-header label code {
+      font-family: var(--code);
+      font-size: 12px;
+      font-weight: 500;
+      background: var(--lightgray);
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      padding: 1px 6px;
+      color: var(--darkgray);
+    }
+
+    .pane-header .btn-ghost {
+      background: none;
+      border: 1px solid var(--gray);
+      color: var(--gray);
+      font-size: 11px;
+      padding: 4px 6px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: color 0.15s, border-color 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pane-header .btn-ghost svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2;
+    }
+
+    .pane-header .btn-ghost:hover {
+      color: var(--dark);
+      border-color: var(--darkgray);
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      min-height: 400px;
+      background: var(--light);
+      color: var(--darkgray);
+      border: 1px solid var(--lightgray);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      padding: 14px;
+      font-family: var(--code);
+      font-size: 12.5px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    textarea:focus {
+      border-color: var(--gray);
+    }
+
+    textarea::placeholder {
+      color: var(--gray);
+      font-style: italic;
+    }
+
+    .pane-header label code.excali-label {
+      font-family: var(--excali);
+      font-size: 14px;
+      letter-spacing: 0;
+    }
+
+    .badge {
+      font-family: var(--code);
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--lightgray);
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--darkgray);
+      vertical-align: baseline;
+    }
+
+    .badge-excali {
+      font-family: var(--excali);
+      font-size: 13px;
+      font-weight: normal;
+      background: var(--lightgray);
+      border: 1px solid #3a3a3a;
+      border-radius: 4px;
+      padding: 1px 5px;
+      color: var(--darkgray);
+      vertical-align: baseline;
+    }
+
+    .pane-logo {
+      width: 12px;
+      height: 12px;
+      filter: invert(1) opacity(0.4);
+      vertical-align: middle;
+    }
+
+    .pane-header-svg {
+      border-left: 2px solid #FFB13B;
+    }
+
+    .pane-header-excalidraw {
+      border-left: 2px solid #6965DB;
+    }
+
+    textarea[readonly] {
+      cursor: default;
+    }
+
+    /* ── Middle column (convert button) ───────────────────────────────────── */
+
+    .actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+    }
+
+    #convert-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid var(--darkgray);
+      color: var(--dark);
+      font-size: 13px;
+      font-weight: 500;
+      font-family: var(--code);
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+      white-space: nowrap;
+    }
+
+    #convert-btn:hover {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: var(--light);
+    }
+
+    #convert-btn:active { transform: scale(0.97); }
+
+    #convert-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke-width: 2;
+    }
+
+    #convert-btn.loading {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Status bar ───────────────────────────────────────────────────────── */
+
+    #status-bar {
+      padding: 4px 24px 12px;
+      font-size: 12px;
+      min-height: 24px;
+      font-family: var(--code);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #status-bar svg {
+      width: 13px;
+      height: 13px;
+      stroke-width: 2;
+      flex-shrink: 0;
+    }
+
+    #status-bar.success { color: #09ad7a; }
+    #status-bar.error   { color: #db4242; }
+    #status-bar.info    { color: var(--gray); }
+
+    /* ── Footer ──────────────────────────────────────────────────────────── */
+
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      font-size: 11px;
+      color: var(--gray);
+      border-top: 1px solid var(--lightgray);
+    }
+
+    footer a { color: var(--darkgray); text-decoration: none; font-weight: 600; }
+    footer a:hover { color: var(--dark); }
+    footer svg { width: 11px; height: 11px; stroke-width: 2; vertical-align: middle; }
+    .footer-excalidraw {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      vertical-align: middle;
+    }
+    .footer-excalidraw span {
+      font-family: var(--excali);
+      font-size: 11px;
+      color: var(--darkgray);
+    }
+    .footer-excalidraw:hover span { color: var(--dark); }
+    .footer-icon {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      opacity: 0.5;
+      transition: opacity 0.15s;
+    }
+    .footer-icon img {
+      width: 13px;
+      height: 13px;
+      filter: invert(1);
+    }
+    .footer-icon:hover { opacity: 1; }
+    .footer-author {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      text-decoration: none;
+    }
+    .footer-author span {
+      font-family: var(--code);
+      font-size: 10px;
+      color: var(--darkgray);
+      transition: color 0.15s;
+    }
+    .footer-author:hover span { color: var(--dark); }
+
+    /* ── Responsive ──────────────────────────────────────────────────────── */
+
+    @media (max-width: 768px) {
+      main {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+      }
+
+      .actions {
+        padding: 12px 0;
+      }
+
+      #convert-btn {
+        flex-direction: row;
+        width: 100%;
+        justify-content: center;
+        border: 1px solid var(--darkgray);
+      }
+
+
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1 data-tooltip="Convert SVG images into editable Excalidraw objects, with customizable stroke, background, and sloppiness."><span class="path">~/</span>svg2excalidraw</h1>
+  </div>
+</header>
+
+<main>
+  <!-- Left pane: SVG input -->
+  <div class="pane">
+    <div class="pane-header pane-header-svg">
+      <div style="display:flex;gap:5px;align-items:center">
+        <img class="pane-logo" src="https://simpleicons.org/icons/svg.svg" alt="" />
+        <label><code>svg</code></label>
+      </div>
+      <button class="btn-ghost" onclick="clearInput()" title="Clear input"><i data-feather="trash-2"></i></button>
+    </div>
+    <textarea
+      id="svg-input"
+      spellcheck="false"
+      placeholder="&lt;!-- Paste your image markup here --&gt;&#10;&#10;&lt;svg xmlns=&quot;http://www.w3.org/2000/svg&quot; width=&quot;100&quot; height=&quot;100&quot;&gt;&#10;  &lt;circle cx=&quot;50&quot; cy=&quot;50&quot; r=&quot;40&quot;&#10;    stroke=&quot;black&quot; fill=&quot;none&quot;/&gt;&#10;&lt;/svg&gt;"
+    ></textarea>
+  </div>
+
+  <!-- Middle: convert button -->
+  <div class="actions">
+    <button id="convert-btn" onclick="runConvert()" title="Convert SVG to Excalidraw JSON">
+      <i data-feather="arrow-right"></i>
+      <span>Convert</span>
+    </button>
+  </div>
+
+  <!-- Right pane: JSON output -->
+  <div class="pane">
+    <div class="pane-header pane-header-excalidraw">
+      <div style="display:flex;gap:5px;align-items:center">
+        <img class="pane-logo" src="https://simpleicons.org/icons/excalidraw.svg" alt="" />
+        <label><code class="excali-label">Excalidraw</code></label>
+      </div>
+      <button class="btn-ghost" id="copy-btn" onclick="copyOutput()" title="Copy to clipboard"><i data-feather="copy"></i></button>
+    </div>
+    <textarea
+      id="json-output"
+      spellcheck="false"
+      readonly
+      placeholder="// Paste this directly into your canvas&#10;&#10;{&#10;  &quot;type&quot;: &quot;excalidraw&quot;,&#10;  &quot;version&quot;: 2,&#10;  &quot;elements&quot;: [&#10;    {&#10;      &quot;type&quot;: &quot;ellipse&quot;,&#10;      &quot;x&quot;: 10.0, &quot;y&quot;: 10.0,&#10;      &quot;width&quot;: 80.0, &quot;height&quot;: 80.0,&#10;      &quot;strokeColor&quot;: &quot;#000000&quot;,&#10;      &quot;backgroundColor&quot;: &quot;transparent&quot;,&#10;      ...&#10;    }&#10;  ]&#10;}"
+    ></textarea>
+  </div>
+</main>
+
+<div id="status-bar" class="info"></div>
+
+<footer>
+  <span style="display:flex;align-items:center;gap:6px;">
+    <a href="https://github.com/alanmmolina/svg2excalidraw" target="_blank" class="footer-icon" title="GitHub"><img src="https://simpleicons.org/icons/github.svg" alt="GitHub" /></a>
+    Built for all <a href="https://excalidraw.com" target="_blank" class="footer-excalidraw"><span>Excalidraw</span></a> fans
+  </span>
+  <a href="http://alanmmolina.com/" target="_blank" class="footer-author"><span>~/.alanmmolina</span></a>
+</footer>
+
+<script>
+  const svgInput  = document.getElementById('svg-input');
+  const jsonOutput = document.getElementById('json-output');
+  const convertBtn = document.getElementById('convert-btn');
+  const statusBar  = document.getElementById('status-bar');
+  const copyBtn    = document.getElementById('copy-btn');
+
+  function setStatus(msg, type = 'info') {
+    statusBar.innerHTML = msg;
+    statusBar.className = type;
+    feather.replace();
+  }
+
+  function clearInput() {
+    svgInput.value = '';
+    jsonOutput.value = '';
+    setStatus('');
+    svgInput.focus();
+  }
+
+  async function runConvert() {
+    const svg = svgInput.value.trim();
+    if (!svg) {
+      setStatus('<i data-feather="x-circle"></i> Nothing to convert', 'error');
+      return;
+    }
+
+    convertBtn.classList.add('loading');
+    convertBtn.disabled = true;
+    setStatus('<i data-feather="loader"></i> Converting…', 'info');
+
+    try {
+      const res = await fetch('/api/convert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ svg }),
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        jsonOutput.value = '';
+        setStatus('<i data-feather="x-circle"></i> ' + data.error, 'error');
+      } else {
+        const json = JSON.stringify(data.excalidraw, null, 2);
+        jsonOutput.value = json;
+        const count = (data.excalidraw.elements || []).length;
+        setStatus('<i data-feather="check-circle"></i> Converted successfully', 'success');
+      }
+    } catch (err) {
+      setStatus('<i data-feather="x-circle"></i> Network error: ' + err.message, 'error');
+    } finally {
+      convertBtn.classList.remove('loading');
+      convertBtn.disabled = false;
+    }
+  }
+
+  async function copyOutput() {
+    const text = jsonOutput.value;
+    if (!text) {
+      setStatus('<i data-feather="alert-circle"></i> Nothing to copy yet', 'info');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      copyBtn.innerHTML = '<i data-feather="check"></i>';
+      feather.replace();
+      setTimeout(() => {
+        copyBtn.innerHTML = '<i data-feather="copy"></i>';
+        feather.replace();
+      }, 1500);
+    } catch {
+      // Fallback: select all text so the user can Ctrl+C manually
+      jsonOutput.select();
+      setStatus('<i data-feather="alert-circle"></i> Select and copy manually (Ctrl+C / ⌘+C)', 'info');
+    }
+  }
+
+  // Allow Ctrl+Enter / Cmd+Enter to trigger conversion from either textarea
+  feather.replace();
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+      e.preventDefault();
+      runConvert();
+    }
+  });
+</script>
+
+</body>
+</html>
