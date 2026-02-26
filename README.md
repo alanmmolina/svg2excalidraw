@@ -17,7 +17,7 @@ The converter walks the SVG element tree and maps each supported tag to its Exca
 
 ## Web UI
 
-The hosted version lives at [svg2excalidraw.alanmmolina.com](https://svg2excalidraw.alanmmolina.com). Paste your SVG markup, hit convert, and copy the resulting JSON straight into your Excalidraw canvas.
+The hosted version lives [here](https://svg2excalidraw.alanmmolina.com). Paste your SVG markup, hit convert, and copy the resulting JSON straight into your Excalidraw canvas.
 
 ## Running locally
 
