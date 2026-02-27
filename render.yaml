@@ -3,5 +3,5 @@ services:
     name: svg2excalidraw
     runtime: python
     buildCommand: uv sync --no-dev
-    startCommand: uv run uvicorn svg2excalidraw.app:app --host 0.0.0.0 --port $PORT
+    startCommand: uv run uvicorn svg2excalidraw.app:app --host 0.0.0.0 --port $PORT --timeout-keep-alive 65
     healthCheckPath: /health
