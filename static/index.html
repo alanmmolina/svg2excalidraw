@@ -490,7 +490,25 @@
         body: JSON.stringify({ svg }),
       });
 
-      const data = await res.json();
+      if (!res.ok) {
+        let msg = `Server error (HTTP ${res.status})`;
+        try {
+          const errData = await res.json();
+          if (errData.error) msg = errData.error;
+        } catch {}
+        jsonOutput.value = '';
+        setStatus('<i data-feather="x-circle"></i> ' + msg, 'error');
+        return;
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        jsonOutput.value = '';
+        setStatus('<i data-feather="x-circle"></i> Response truncated — the SVG may be too large to process', 'error');
+        return;
+      }
 
       if (data.error) {
         jsonOutput.value = '';
@@ -498,7 +516,6 @@
       } else {
         const json = JSON.stringify(data.excalidraw, null, 2);
         jsonOutput.value = json;
-        const count = (data.excalidraw.elements || []).length;
         setStatus('<i data-feather="check-circle"></i> Converted successfully', 'success');
       }
     } catch (err) {
