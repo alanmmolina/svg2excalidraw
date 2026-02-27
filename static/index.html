@@ -362,9 +362,18 @@
     /* ── Responsive ──────────────────────────────────────────────────────── */
 
     @media (max-width: 768px) {
+      html, body {
+        height: auto;
+      }
+
       main {
         grid-template-columns: 1fr;
         grid-template-rows: auto auto auto;
+        min-height: unset;
+      }
+
+      .pane {
+        min-height: unset;
       }
 
       .actions {
