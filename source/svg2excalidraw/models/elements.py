@@ -73,6 +73,32 @@ class ExcalidrawLinearElement(ExcalidrawElement):
         return result
 
 
+class ExcalidrawTextElement(ExcalidrawElement):
+    """Excalidraw text element."""
+
+    type: str = "text"
+    text: str = ""
+    font_family: int = 1  # 1=Arial, 2=Virgil, 3=Cascadia
+    font_size: float = 20
+    baseline: float = 0.0
+    text_align: str = "left"
+    vertical_align: str = "top"
+    original_text: str = ""
+
+    def to_dict(self) -> dict:
+        """
+        Serialise to a camelCase dict with coordinates rounded to 2 decimal places.
+
+        Returns
+        -------
+        dict
+            Excalidraw-compatible element dict with camelCase keys and all
+            coordinates rounded to 2 decimal places.
+        """
+        result = super().to_dict()
+        return result
+
+
 def _build_shape[T: ExcalidrawElement](
     model: type[T], element_type: str
 ) -> Callable[..., T]:
@@ -102,3 +128,4 @@ def _build_shape[T: ExcalidrawElement](
 build_rectangle = _build_shape(model=ExcalidrawElement, element_type="rectangle")
 build_ellipse = _build_shape(model=ExcalidrawElement, element_type="ellipse")
 build_line = _build_shape(model=ExcalidrawLinearElement, element_type="line")
+build_text = _build_shape(model=ExcalidrawTextElement, element_type="text")
