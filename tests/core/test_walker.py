@@ -208,9 +208,6 @@ def test_walk_namespaced_element_is_dispatched_correctly(fresh_scene):
     assert len(fresh_scene.elements) == 1
 
 
-# ── <text> element ────────────────────────────────────────────────────────────
-
-
 def test_walk_text_adds_one_element(fresh_scene, svg_root):
     """
     Arrange: a text element with content.

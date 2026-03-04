@@ -274,9 +274,6 @@ def test_linear_element_to_dict_includes_all_base_fields(line_element):
         assert key in result
 
 
-# ── ExcalidrawTextElement / build_text ────────────────────────────────────────
-
-
 def test_build_text_type_field():
     """
     Arrange: nothing.
