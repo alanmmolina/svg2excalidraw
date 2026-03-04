@@ -145,13 +145,13 @@ def test_walk_line_adds_line_type(fresh_scene, svg_root):
 
 def test_walk_unknown_tag_adds_nothing(fresh_scene, svg_root):
     """
-    Arrange: an SVG element with a tag name not handled by the walker (e.g. <text>).
+    Arrange: an SVG element with a tag name not handled by the walker (e.g. <image>).
     Act: call walk() on it.
     Assert: no element is added to the scene and no exception is raised.
     """
     ctx = Context(root=svg_root, scene=fresh_scene)
-    text_element = etree.fromstring("<text>hello</text>")
-    walk(ctx, text_element)
+    image_element = etree.fromstring('<image href="foo.png"/>')
+    walk(ctx, image_element)
     assert len(fresh_scene.elements) == 0
 
 
@@ -206,3 +206,208 @@ def test_walk_namespaced_element_is_dispatched_correctly(fresh_scene):
     ctx = Context(root=svg, scene=fresh_scene)
     walk(ctx, rect)
     assert len(fresh_scene.elements) == 1
+
+
+# ── <text> element ────────────────────────────────────────────────────────────
+
+
+def test_walk_text_adds_one_element(fresh_scene, svg_root):
+    """
+    Arrange: a text element with content.
+    Act: call walk().
+    Assert: exactly one element is added to the scene.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="10" y="20">hello</text>'))
+    assert len(fresh_scene.elements) == 1
+
+
+def test_walk_text_type_is_text(fresh_scene, svg_root):
+    """
+    Arrange: a text element.
+    Act: call walk().
+    Assert: the added element has type 'text'.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0">hello</text>'))
+    assert fresh_scene.elements[0].type == "text"
+
+
+def test_walk_text_content_is_preserved(fresh_scene, svg_root):
+    """
+    Arrange: a text element with specific content.
+    Act: call walk().
+    Assert: the element's text and original_text fields match the source content.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0">hello world</text>'))
+    element = fresh_scene.elements[0]
+    assert element.text == "hello world"
+    assert element.original_text == "hello world"
+
+
+def test_walk_text_empty_content_skipped(fresh_scene, svg_root):
+    """
+    Arrange: a text element with no text content.
+    Act: call walk().
+    Assert: no element is added to the scene.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring("<text x=\"0\" y=\"0\"></text>"))
+    assert len(fresh_scene.elements) == 0
+
+
+def test_walk_text_whitespace_only_skipped(fresh_scene, svg_root):
+    """
+    Arrange: a text element containing only whitespace.
+    Act: call walk().
+    Assert: no element is added to the scene.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0">   </text>'))
+    assert len(fresh_scene.elements) == 0
+
+
+def test_walk_text_position_from_attributes(fresh_scene, svg_root):
+    """
+    Arrange: a text element with explicit x and y attributes.
+    Act: call walk().
+    Assert: the element's x and y match the source attributes.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="15" y="30">hi</text>'))
+    element = fresh_scene.elements[0]
+    assert element.x == pytest.approx(15.0)
+    assert element.y == pytest.approx(30.0)
+
+
+def test_walk_text_anchor_start_maps_to_left(fresh_scene, svg_root):
+    """
+    Arrange: a text element with text-anchor='start'.
+    Act: call walk().
+    Assert: text_align is 'left'.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" text-anchor="start">hi</text>'))
+    assert fresh_scene.elements[0].text_align == "left"
+
+
+def test_walk_text_anchor_middle_maps_to_center(fresh_scene, svg_root):
+    """
+    Arrange: a text element with text-anchor='middle'.
+    Act: call walk().
+    Assert: text_align is 'center'.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" text-anchor="middle">hi</text>'))
+    assert fresh_scene.elements[0].text_align == "center"
+
+
+def test_walk_text_anchor_end_maps_to_right(fresh_scene, svg_root):
+    """
+    Arrange: a text element with text-anchor='end'.
+    Act: call walk().
+    Assert: text_align is 'right'.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" text-anchor="end">hi</text>'))
+    assert fresh_scene.elements[0].text_align == "right"
+
+
+def test_walk_text_default_text_anchor_is_left(fresh_scene, svg_root):
+    """
+    Arrange: a text element with no text-anchor attribute.
+    Act: call walk().
+    Assert: text_align defaults to 'left'.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0">hi</text>'))
+    assert fresh_scene.elements[0].text_align == "left"
+
+
+def test_walk_text_fill_maps_to_stroke_color(fresh_scene, svg_root):
+    """
+    Arrange: a text element with a fill attribute.
+    Act: call walk().
+    Assert: the fill value is stored as stroke_color on the element.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" fill="#ff0000">hi</text>'))
+    assert fresh_scene.elements[0].stroke_color == "#ff0000"
+
+
+def test_walk_text_font_size_parsed(fresh_scene, svg_root):
+    """
+    Arrange: a text element with font-size set to 32.
+    Act: call walk().
+    Assert: font_size on the element is 32.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" font-size="32">hi</text>'))
+    assert fresh_scene.elements[0].font_size == pytest.approx(32.0)
+
+
+def test_walk_text_font_family_helvetica_maps_to_2(fresh_scene, svg_root):
+    """
+    Arrange: a text element with font-family='Helvetica'.
+    Act: call walk().
+    Assert: font_family is 2.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" font-family="Helvetica">hi</text>'))
+    assert fresh_scene.elements[0].font_family == 2
+
+
+def test_walk_text_font_family_arial_maps_to_2(fresh_scene, svg_root):
+    """
+    Arrange: a text element with font-family='Arial'.
+    Act: call walk().
+    Assert: font_family is 2 (Helvetica slot).
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" font-family="Arial">hi</text>'))
+    assert fresh_scene.elements[0].font_family == 2
+
+
+def test_walk_text_font_family_cascadia_maps_to_3(fresh_scene, svg_root):
+    """
+    Arrange: a text element with font-family='Cascadia'.
+    Act: call walk().
+    Assert: font_family is 3.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" font-family="Cascadia">hi</text>'))
+    assert fresh_scene.elements[0].font_family == 3
+
+
+def test_walk_text_unknown_font_family_defaults_to_virgil(fresh_scene, svg_root):
+    """
+    Arrange: a text element with an unrecognised font-family.
+    Act: call walk().
+    Assert: font_family defaults to 1 (Virgil).
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" font-family="Georgia">hi</text>'))
+    assert fresh_scene.elements[0].font_family == 1
+
+
+def test_walk_text_estimated_width_from_content_and_font_size(fresh_scene, svg_root):
+    """
+    Arrange: a text element with known content length and font-size.
+    Act: call walk().
+    Assert: width is approximately len(content) * font_size * 0.6.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" font-size="20">hello</text>'))
+    assert fresh_scene.elements[0].width == pytest.approx(5 * 20 * 0.6)
+
+
+def test_walk_text_estimated_height_from_font_size(fresh_scene, svg_root):
+    """
+    Arrange: a text element with a known font-size.
+    Act: call walk().
+    Assert: height is approximately font_size * 1.2.
+    """
+    ctx = Context(root=svg_root, scene=fresh_scene)
+    walk(ctx, etree.fromstring('<text x="0" y="0" font-size="20">hello</text>'))
+    assert fresh_scene.elements[0].height == pytest.approx(20 * 1.2)
