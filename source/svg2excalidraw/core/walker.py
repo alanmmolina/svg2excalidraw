@@ -461,42 +461,38 @@ def _convert_text(element: etree._Element, context: Context) -> None:
     text_content = (element.text or "").strip()
     if not text_content:
         return
-    
+
     transform_matrix = accumulated_transform_matrix(element, context.groups)
-    
-    # 获取文本位置和样式属性
+
     x = _float_attr(element, "x")
     y = _float_attr(element, "y")
     font_size = _float_attr(element, "font-size", 20)
-    
-    # 转换坐标
+
     transformed_x, transformed_y = transform_points([(x, y)], transform_matrix)[0]
-    
-    # 解析文本对齐方式
+
+    # Map SVG text-anchor to Excalidraw text alignment.
     text_anchor = element.get("text-anchor", "start")
     text_align_map = {
         "start": "left",
         "middle": "center",
-        "end": "right"
+        "end": "right",
     }
     text_align = text_align_map.get(text_anchor, "left")
-    
-    # 解析字体（简化处理，默认使用 Arial）
-    font_family_attr = element.get("font-family", "Arial")
-    font_family = 1  # 默认为 Arial
-    if "Virgil" in font_family_attr:
+
+    # Map SVG font-family to Excalidraw font family index (1=Virgil, 2=Helvetica, 3=Cascadia).
+    font_family_attr = element.get("font-family", "")
+    font_family = 1  # Default to Virgil (Excalidraw's hand-drawn font).
+    if "Helvetica" in font_family_attr or "Arial" in font_family_attr:
         font_family = 2
     elif "Cascadia" in font_family_attr:
         font_family = 3
-    
-    # 解析文本颜色（从 fill 属性）
+
     fill_color = element.get("fill", "#000000")
-    
-    # 估算文本宽度和高度（简化处理）
-    # 实际应该根据字体和字号计算，这里使用近似值
+
+    # Estimate bounding box from character count and font size.
     estimated_width = len(text_content) * font_size * 0.6
     estimated_height = font_size * 1.2
-    
+
     text_element = build_text(
         x=transformed_x,
         y=transformed_y,
@@ -510,7 +506,7 @@ def _convert_text(element: etree._Element, context: Context) -> None:
         text_align=text_align,
         group_ids=context.group_ids(),
     )
-    
+
     context.scene.add(text_element)
 
 
