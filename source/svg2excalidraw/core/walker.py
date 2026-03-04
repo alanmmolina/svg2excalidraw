@@ -9,6 +9,7 @@ from ..models.elements import (
     build_ellipse,
     build_line,
     build_rectangle,
+    build_text,
 )
 from ..models.scene import ExcalidrawScene
 from ..utils.geometry import bounding_dimensions, winding_order
@@ -452,6 +453,65 @@ def _convert_path(element: etree._Element, context: Context) -> None:
         _apply_presentation_attrs(element, line, context)
         line.background_color = background_color
         context.scene.add(line)
+
+
+@_handles("text")
+def _convert_text(element: etree._Element, context: Context) -> None:
+    """Convert a ``<text>`` element to an Excalidraw text element."""
+    text_content = (element.text or "").strip()
+    if not text_content:
+        return
+    
+    transform_matrix = accumulated_transform_matrix(element, context.groups)
+    
+    # 获取文本位置和样式属性
+    x = _float_attr(element, "x")
+    y = _float_attr(element, "y")
+    font_size = _float_attr(element, "font-size", 20)
+    
+    # 转换坐标
+    transformed_x, transformed_y = transform_points([(x, y)], transform_matrix)[0]
+    
+    # 解析文本对齐方式
+    text_anchor = element.get("text-anchor", "start")
+    text_align_map = {
+        "start": "left",
+        "middle": "center",
+        "end": "right"
+    }
+    text_align = text_align_map.get(text_anchor, "left")
+    
+    # 解析字体（简化处理，默认使用 Arial）
+    font_family_attr = element.get("font-family", "Arial")
+    font_family = 1  # 默认为 Arial
+    if "Virgil" in font_family_attr:
+        font_family = 2
+    elif "Cascadia" in font_family_attr:
+        font_family = 3
+    
+    # 解析文本颜色（从 fill 属性）
+    fill_color = element.get("fill", "#000000")
+    
+    # 估算文本宽度和高度（简化处理）
+    # 实际应该根据字体和字号计算，这里使用近似值
+    estimated_width = len(text_content) * font_size * 0.6
+    estimated_height = font_size * 1.2
+    
+    text_element = build_text(
+        x=transformed_x,
+        y=transformed_y,
+        width=estimated_width,
+        height=estimated_height,
+        text=text_content,
+        original_text=text_content,
+        font_family=font_family,
+        font_size=font_size,
+        stroke_color=fill_color,
+        text_align=text_align,
+        group_ids=context.group_ids(),
+    )
+    
+    context.scene.add(text_element)
 
 
 def walk(context: Context, element: etree._Element) -> None:
