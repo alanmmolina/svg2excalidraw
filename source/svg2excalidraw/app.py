@@ -87,7 +87,7 @@ async def api_convert(body: ConvertRequest) -> JSONResponse:
             loop.run_in_executor(None, partial(convert, body.svg)),
             timeout=CONVERT_TIMEOUT_SECONDS,
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return JSONResponse(
             content={
                 "error": (
