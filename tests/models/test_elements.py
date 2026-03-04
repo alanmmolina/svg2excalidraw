@@ -4,6 +4,7 @@ from source.svg2excalidraw.models.elements import (
     build_ellipse,
     build_line,
     build_rectangle,
+    build_text,
 )
 
 
@@ -163,9 +164,7 @@ def test_build_rectangle_accepts_style_overrides():
     Act: create a rectangle with those overrides.
     Assert: the element carries the provided color strings.
     """
-    element = build_rectangle(
-        stroke_color="#ff0000", background_color="#00ff00"
-    )
+    element = build_rectangle(stroke_color="#ff0000", background_color="#00ff00")
     assert element.stroke_color == "#ff0000"
     assert element.background_color == "#00ff00"
 
@@ -270,4 +269,87 @@ def test_linear_element_to_dict_includes_all_base_fields(line_element):
         "opacity",
         "groupIds",
     ):
+        assert key in result
+
+
+def test_build_text_type_field():
+    """
+    Arrange: nothing.
+    Act: create a text element via build_text().
+    Assert: the 'type' field is 'text'.
+    """
+    element = build_text()
+    assert element.type == "text"
+
+
+def test_build_text_default_font_family():
+    """
+    Arrange: nothing.
+    Act: create a text element with no overrides.
+    Assert: font_family defaults to 1 (Virgil).
+    """
+    element = build_text()
+    assert element.font_family == 1
+
+
+def test_build_text_default_font_size():
+    """
+    Arrange: nothing.
+    Act: create a text element with no overrides.
+    Assert: font_size defaults to 20.
+    """
+    element = build_text()
+    assert element.font_size == 20
+
+
+def test_build_text_default_text_align():
+    """
+    Arrange: nothing.
+    Act: create a text element with no overrides.
+    Assert: text_align defaults to 'left'.
+    """
+    element = build_text()
+    assert element.text_align == "left"
+
+
+def test_build_text_stores_content():
+    """
+    Arrange: a text string.
+    Act: create a text element with text and original_text set.
+    Assert: both fields are stored correctly.
+    """
+    element = build_text(text="hello", original_text="hello")
+    assert element.text == "hello"
+    assert element.original_text == "hello"
+
+
+def test_build_text_serializes_text_fields_to_camel_case():
+    """
+    Arrange: a text element with all key fields set.
+    Act: call to_dict().
+    Assert: text-specific fields appear in camelCase in the output.
+    """
+    element = build_text(
+        text="hi",
+        original_text="hi",
+        font_family=2,
+        font_size=16,
+        text_align="center",
+    )
+    result = element.to_dict()
+    assert result["text"] == "hi"
+    assert result["originalText"] == "hi"
+    assert result["fontFamily"] == 2
+    assert result["fontSize"] == 16
+    assert result["textAlign"] == "center"
+
+
+def test_build_text_to_dict_includes_base_fields():
+    """
+    Arrange: a text element.
+    Act: call to_dict().
+    Assert: all standard ExcalidrawElement fields are present alongside text fields.
+    """
+    result = build_text(text="test", original_text="test").to_dict()
+    for key in ("type", "x", "y", "width", "height", "strokeColor", "groupIds"):
         assert key in result

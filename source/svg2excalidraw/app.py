@@ -44,18 +44,14 @@ async def index() -> HTMLResponse:
     html_path = _static_dir / "index.html"
     if html_path.exists():
         return HTMLResponse(content=html_path.read_text(encoding="utf-8"))
-    return HTMLResponse(
-        content="<h1>svg2excalidraw</h1><p>index.html not found.</p>"
-    )
+    return HTMLResponse(content="<h1>svg2excalidraw</h1><p>index.html not found.</p>")
 
 
 @app.post(path="/api/convert")
 async def api_convert(body: ConvertRequest) -> JSONResponse:
     """Convert an SVG string to Excalidraw JSON."""
     if not body.svg.strip():
-        return JSONResponse(
-            content={"error": "SVG input is empty."}, status_code=400
-        )
+        return JSONResponse(content={"error": "SVG input is empty."}, status_code=400)
 
     svg_size = len(body.svg.encode("utf-8"))
     if svg_size > MAX_SVG_BYTES:
@@ -87,7 +83,7 @@ async def api_convert(body: ConvertRequest) -> JSONResponse:
             loop.run_in_executor(None, partial(convert, body.svg)),
             timeout=CONVERT_TIMEOUT_SECONDS,
         )
-    except asyncio.TimeoutError:
+    except TimeoutError:
         return JSONResponse(
             content={
                 "error": (
@@ -100,9 +96,7 @@ async def api_convert(body: ConvertRequest) -> JSONResponse:
     except ValueError as exc:
         return JSONResponse(content={"error": str(exc)}, status_code=400)
     except Exception as exc:  # pragma: no cover
-        return JSONResponse(
-            content={"error": f"Conversion failed: {exc}"}, status_code=500
-        )
+        return JSONResponse(content={"error": f"Conversion failed: {exc}"}, status_code=500)
     return JSONResponse(content={"excalidraw": result})
 
 

@@ -22,9 +22,7 @@ from .mapper import (
 from .parser import parse
 from .tracer import trace
 
-_FLOAT_PATTERN: re.Pattern[str] = re.compile(
-    r"\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\s*"
-)
+_FLOAT_PATTERN: re.Pattern[str] = re.compile(r"\s*[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?\s*")
 
 _TAG_HANDLERS: dict[str, Callable[[etree._Element, "Context"], None]] = {}
 
@@ -92,9 +90,7 @@ def _local_tag_name(element: etree._Element) -> str:
             return ""
 
 
-def _float_attr(
-    element: etree._Element, attribute_name: str, default: float = 0.0
-) -> float:
+def _float_attr(element: etree._Element, attribute_name: str, default: float = 0.0) -> float:
     """
     Read a numeric XML attribute, returning a default if absent or non-numeric.
 
@@ -163,8 +159,7 @@ def _to_relative_points(
         return 0.0, 0.0, []
     origin_x, origin_y = absolute_points[0]
     relative_points = [
-        [point_x - origin_x, point_y - origin_y]
-        for point_x, point_y in absolute_points
+        [point_x - origin_x, point_y - origin_y] for point_x, point_y in absolute_points
     ]
     return origin_x, origin_y, relative_points
 
@@ -185,8 +180,7 @@ def _parse_svg_points(points_str: str) -> list[tuple[float, float]]:
     """
     tokens = points_str.replace(",", " ").split()
     return [
-        (float(tokens[index]), float(tokens[index + 1]))
-        for index in range(0, len(tokens) - 1, 2)
+        (float(tokens[index]), float(tokens[index + 1])) for index in range(0, len(tokens) - 1, 2)
     ]
 
 
@@ -213,15 +207,9 @@ def _resolved_use_element(
         A deep copy of def_element with selected attributes overridden from use_element.
     """
     resolved = etree.fromstring(etree.tostring(def_element))
-    always_override: frozenset[str] = frozenset(
-        {"x", "y", "width", "height", "href", "xlink:href"}
-    )
+    always_override: frozenset[str] = frozenset({"x", "y", "width", "height", "href", "xlink:href"})
     for attribute_name, attribute_value in use_element.attrib.items():
-        local_name = (
-            attribute_name.split("}")[-1]
-            if "}" in attribute_name
-            else attribute_name
-        )
+        local_name = attribute_name.split("}")[-1] if "}" in attribute_name else attribute_name
         if local_name in always_override or not resolved.get(attribute_name):
             resolved.set(attribute_name, attribute_value)
     return resolved
@@ -245,9 +233,7 @@ def _convert_g(element: etree._Element, context: Context) -> None:
 @_handles("use")
 def _convert_use(element: etree._Element, context: Context) -> None:
     """Resolve a ``<use>`` element and walk the referenced definition."""
-    href = element.get("href") or element.get(
-        "{http://www.w3.org/1999/xlink}href"
-    )
+    href = element.get("href") or element.get("{http://www.w3.org/1999/xlink}href")
     if not href or not href.startswith("#"):
         return
     referenced = context.root.find(f'.//*[@id="{href[1:]}"]')
@@ -415,9 +401,7 @@ def _convert_path(element: etree._Element, context: Context) -> None:
     fill_rule = element.get("fill-rule", "nonzero")
     subpaths = trace(path_data)
     path_group_id = random_id()
-    fill_color = parse(element, context.groups).get(
-        "background_color", "#000000"
-    )
+    fill_color = parse(element, context.groups).get("background_color", "#000000")
     initial_winding: str | None = None
 
     for subpath_index, raw_points in enumerate(subpaths):
@@ -425,22 +409,16 @@ def _convert_path(element: etree._Element, context: Context) -> None:
             continue
 
         absolute_points = transform_points(raw_points, transform_matrix)
-        origin_x, origin_y, relative_points = _to_relative_points(
-            absolute_points
-        )
+        origin_x, origin_y, relative_points = _to_relative_points(absolute_points)
         width, height = bounding_dimensions(relative_points)
 
         if fill_rule == "nonzero":
             subpath_winding = winding_order(absolute_points)
             if subpath_index == 0:
                 initial_winding = subpath_winding
-            background_color = (
-                fill_color if subpath_winding == initial_winding else "#ffffff"
-            )
+            background_color = fill_color if subpath_winding == initial_winding else "#ffffff"
         else:
-            background_color = (
-                fill_color if subpath_index % 2 == 0 else "#ffffff"
-            )
+            background_color = fill_color if subpath_index % 2 == 0 else "#ffffff"
 
         line = build_line(
             x=origin_x,
@@ -461,42 +439,38 @@ def _convert_text(element: etree._Element, context: Context) -> None:
     text_content = (element.text or "").strip()
     if not text_content:
         return
-    
+
     transform_matrix = accumulated_transform_matrix(element, context.groups)
-    
-    # 获取文本位置和样式属性
+
     x = _float_attr(element, "x")
     y = _float_attr(element, "y")
     font_size = _float_attr(element, "font-size", 20)
-    
-    # 转换坐标
+
     transformed_x, transformed_y = transform_points([(x, y)], transform_matrix)[0]
-    
-    # 解析文本对齐方式
+
+    # Map SVG text-anchor to Excalidraw text alignment.
     text_anchor = element.get("text-anchor", "start")
     text_align_map = {
         "start": "left",
         "middle": "center",
-        "end": "right"
+        "end": "right",
     }
     text_align = text_align_map.get(text_anchor, "left")
-    
-    # 解析字体（简化处理，默认使用 Arial）
-    font_family_attr = element.get("font-family", "Arial")
-    font_family = 1  # 默认为 Arial
-    if "Virgil" in font_family_attr:
+
+    # Map SVG font-family to Excalidraw font family index (1=Virgil, 2=Helvetica, 3=Cascadia).
+    font_family_attr = element.get("font-family", "")
+    font_family = 1  # Default to Virgil (Excalidraw's hand-drawn font).
+    if "Helvetica" in font_family_attr or "Arial" in font_family_attr:
         font_family = 2
     elif "Cascadia" in font_family_attr:
         font_family = 3
-    
-    # 解析文本颜色（从 fill 属性）
+
     fill_color = element.get("fill", "#000000")
-    
-    # 估算文本宽度和高度（简化处理）
-    # 实际应该根据字体和字号计算，这里使用近似值
+
+    # Estimate bounding box from character count and font size.
     estimated_width = len(text_content) * font_size * 0.6
     estimated_height = font_size * 1.2
-    
+
     text_element = build_text(
         x=transformed_x,
         y=transformed_y,
@@ -510,7 +484,7 @@ def _convert_text(element: etree._Element, context: Context) -> None:
         text_align=text_align,
         group_ids=context.group_ids(),
     )
-    
+
     context.scene.add(text_element)
 
 

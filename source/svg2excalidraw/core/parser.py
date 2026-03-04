@@ -145,9 +145,7 @@ def parse_color(value: str, fallback: str = "#000000") -> str:
     if normalized == "currentcolor":
         return fallback
 
-    if color_match := re.fullmatch(
-        r"#([0-9a-f])([0-9a-f])([0-9a-f])", normalized
-    ):
+    if color_match := re.fullmatch(r"#([0-9a-f])([0-9a-f])([0-9a-f])", normalized):
         return f"#{color_match.group(1) * 2}{color_match.group(2) * 2}{color_match.group(3) * 2}"
 
     if re.fullmatch(r"#[0-9a-f]{6}([0-9a-f]{2})?", normalized):

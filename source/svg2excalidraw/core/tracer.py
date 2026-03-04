@@ -72,12 +72,8 @@ def trace(
                     sampled_point = segment.point(sample_index / curve_samples)
                     current_subpath.append(
                         (
-                            round(
-                                float(sampled_point.x), _COORDINATE_PRECISION
-                            ),
-                            round(
-                                float(sampled_point.y), _COORDINATE_PRECISION
-                            ),
+                            round(float(sampled_point.x), _COORDINATE_PRECISION),
+                            round(float(sampled_point.y), _COORDINATE_PRECISION),
                         )
                     )
 

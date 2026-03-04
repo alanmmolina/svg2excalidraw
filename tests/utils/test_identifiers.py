@@ -22,9 +22,7 @@ def test_random_id_uses_url_safe_characters():
     """
     for _ in range(20):
         result = random_id()
-        assert re.fullmatch(r"[A-Za-z0-9_-]+", result), (
-            f"ID contains unsafe chars: {result!r}"
-        )
+        assert re.fullmatch(r"[A-Za-z0-9_-]+", result), f"ID contains unsafe chars: {result!r}"
 
 
 def test_random_id_minimum_length():

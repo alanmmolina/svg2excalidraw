@@ -78,30 +78,15 @@ class ExcalidrawTextElement(ExcalidrawElement):
 
     type: str = "text"
     text: str = ""
-    font_family: int = 1  # 1=Arial, 2=Virgil, 3=Cascadia
+    font_family: int = 1  # 1=Virgil, 2=Helvetica, 3=Cascadia
     font_size: float = 20
     baseline: float = 0.0
     text_align: str = "left"
     vertical_align: str = "top"
     original_text: str = ""
 
-    def to_dict(self) -> dict:
-        """
-        Serialise to a camelCase dict with coordinates rounded to 2 decimal places.
 
-        Returns
-        -------
-        dict
-            Excalidraw-compatible element dict with camelCase keys and all
-            coordinates rounded to 2 decimal places.
-        """
-        result = super().to_dict()
-        return result
-
-
-def _build_shape[T: ExcalidrawElement](
-    model: type[T], element_type: str
-) -> Callable[..., T]:
+def _build_shape[T: ExcalidrawElement](model: type[T], element_type: str) -> Callable[..., T]:
     """
     Return a factory that constructs ``model`` instances with a fixed ``type`` field.
 

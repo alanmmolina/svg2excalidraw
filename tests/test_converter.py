@@ -127,9 +127,7 @@ def test_rect_produces_rectangle_type():
     Act: call convert() and find the rectangle element.
     Assert: the element type is 'rectangle'.
     """
-    element = _first_of_type(
-        _svg('<rect x="0" y="0" width="10" height="10"/>'), "rectangle"
-    )
+    element = _first_of_type(_svg('<rect x="0" y="0" width="10" height="10"/>'), "rectangle")
     assert element["type"] == "rectangle"
 
 
@@ -187,9 +185,7 @@ def test_rect_with_rx_gets_round_sharpness():
     Act: call convert().
     Assert: 'strokeSharpness' is 'round'.
     """
-    element = _first_of_type(
-        _svg('<rect x="0" y="0" width="10" height="10" rx="5"/>'), "rectangle"
-    )
+    element = _first_of_type(_svg('<rect x="0" y="0" width="10" height="10" rx="5"/>'), "rectangle")
     assert element["strokeSharpness"] == "round"
 
 
@@ -199,9 +195,7 @@ def test_rect_without_rx_keeps_sharp_sharpness():
     Act: call convert().
     Assert: 'strokeSharpness' is 'sharp'.
     """
-    element = _first_of_type(
-        _svg('<rect x="0" y="0" width="10" height="10"/>'), "rectangle"
-    )
+    element = _first_of_type(_svg('<rect x="0" y="0" width="10" height="10"/>'), "rectangle")
     assert element["strokeSharpness"] == "sharp"
 
 
@@ -211,9 +205,7 @@ def test_rect_with_ry_also_gets_round_sharpness():
     Act: call convert().
     Assert: 'strokeSharpness' is 'round' (ry also triggers rounding).
     """
-    element = _first_of_type(
-        _svg('<rect x="0" y="0" width="10" height="10" ry="3"/>'), "rectangle"
-    )
+    element = _first_of_type(_svg('<rect x="0" y="0" width="10" height="10" ry="3"/>'), "rectangle")
     assert element["strokeSharpness"] == "round"
 
 
@@ -224,9 +216,7 @@ def test_rect_with_transform_applies_translation():
     Assert: the rectangle's x ≈ 50, y ≈ 30.
     """
     element = _first_of_type(
-        _svg(
-            '<rect x="0" y="0" width="10" height="10" transform="translate(50, 30)"/>'
-        ),
+        _svg('<rect x="0" y="0" width="10" height="10" transform="translate(50, 30)"/>'),
         "rectangle",
     )
     assert element["x"] == _approx(50)
@@ -254,9 +244,7 @@ def test_circle_becomes_ellipse_type():
     Act: call convert().
     Assert: Excalidraw output uses type 'ellipse' (circles map to ellipses).
     """
-    element = _first_of_type(
-        _svg('<circle cx="50" cy="50" r="30"/>'), "ellipse"
-    )
+    element = _first_of_type(_svg('<circle cx="50" cy="50" r="30"/>'), "ellipse")
     assert element["type"] == "ellipse"
 
 
@@ -266,9 +254,7 @@ def test_circle_x_is_center_minus_radius():
     Act: call convert().
     Assert: x ≈ cx - r = 20, y ≈ cy - r = 20.
     """
-    element = _first_of_type(
-        _svg('<circle cx="50" cy="50" r="30"/>'), "ellipse"
-    )
+    element = _first_of_type(_svg('<circle cx="50" cy="50" r="30"/>'), "ellipse")
     assert element["x"] == _approx(20)
     assert element["y"] == _approx(20)
 
@@ -279,9 +265,7 @@ def test_circle_width_and_height_are_diameter():
     Act: call convert().
     Assert: width ≈ 60, height ≈ 60 (diameter = 2r).
     """
-    element = _first_of_type(
-        _svg('<circle cx="50" cy="50" r="30"/>'), "ellipse"
-    )
+    element = _first_of_type(_svg('<circle cx="50" cy="50" r="30"/>'), "ellipse")
     assert element["width"] == _approx(60)
     assert element["height"] == _approx(60)
 
@@ -293,9 +277,7 @@ def test_ellipse_type():
     Assert: element type is 'ellipse'.
     """
     assert (
-        _first_of_type(
-            _svg('<ellipse cx="60" cy="40" rx="50" ry="20"/>'), "ellipse"
-        )["type"]
+        _first_of_type(_svg('<ellipse cx="60" cy="40" rx="50" ry="20"/>'), "ellipse")["type"]
         == "ellipse"
     )
 
@@ -306,9 +288,7 @@ def test_ellipse_position():
     Act: call convert().
     Assert: x ≈ cx - rx = 10, y ≈ cy - ry = 20.
     """
-    element = _first_of_type(
-        _svg('<ellipse cx="60" cy="40" rx="50" ry="20"/>'), "ellipse"
-    )
+    element = _first_of_type(_svg('<ellipse cx="60" cy="40" rx="50" ry="20"/>'), "ellipse")
     assert element["x"] == _approx(10)
     assert element["y"] == _approx(20)
 
@@ -319,9 +299,7 @@ def test_ellipse_dimensions():
     Act: call convert().
     Assert: width ≈ 100 (2*rx), height ≈ 40 (2*ry).
     """
-    element = _first_of_type(
-        _svg('<ellipse cx="60" cy="40" rx="50" ry="20"/>'), "ellipse"
-    )
+    element = _first_of_type(_svg('<ellipse cx="60" cy="40" rx="50" ry="20"/>'), "ellipse")
     assert element["width"] == _approx(100)
     assert element["height"] == _approx(40)
 
@@ -332,12 +310,7 @@ def test_line_type():
     Act: call convert().
     Assert: element type is 'line'.
     """
-    assert (
-        _first_of_type(_svg('<line x1="0" y1="0" x2="100" y2="0"/>'), "line")[
-            "type"
-        ]
-        == "line"
-    )
+    assert _first_of_type(_svg('<line x1="0" y1="0" x2="100" y2="0"/>'), "line")["type"] == "line"
 
 
 def test_line_has_two_points():
@@ -346,9 +319,7 @@ def test_line_has_two_points():
     Act: call convert().
     Assert: 'points' list contains exactly 2 entries.
     """
-    element = _first_of_type(
-        _svg('<line x1="0" y1="0" x2="100" y2="0"/>'), "line"
-    )
+    element = _first_of_type(_svg('<line x1="0" y1="0" x2="100" y2="0"/>'), "line")
     assert len(element["points"]) == 2
 
 
@@ -358,9 +329,7 @@ def test_line_first_point_is_origin():
     Act: call convert().
     Assert: first point in 'points' is [0, 0] (relative coordinates start at origin).
     """
-    element = _first_of_type(
-        _svg('<line x1="10" y1="20" x2="110" y2="20"/>'), "line"
-    )
+    element = _first_of_type(_svg('<line x1="10" y1="20" x2="110" y2="20"/>'), "line")
     assert element["points"][0] == [_approx(0), _approx(0)]
 
 
@@ -370,9 +339,7 @@ def test_line_second_point_is_relative_offset():
     Act: call convert().
     Assert: second point is [100, 0] — offset from the first point.
     """
-    element = _first_of_type(
-        _svg('<line x1="10" y1="20" x2="110" y2="20"/>'), "line"
-    )
+    element = _first_of_type(_svg('<line x1="10" y1="20" x2="110" y2="20"/>'), "line")
     assert element["points"][1] == [_approx(100), _approx(0)]
 
 
@@ -382,12 +349,7 @@ def test_polyline_type():
     Act: call convert().
     Assert: element type is 'line'.
     """
-    assert (
-        _first_of_type(_svg('<polyline points="0,0 100,0 100,100"/>'), "line")[
-            "type"
-        ]
-        == "line"
-    )
+    assert _first_of_type(_svg('<polyline points="0,0 100,0 100,100"/>'), "line")["type"] == "line"
 
 
 def test_polyline_point_count():
@@ -396,9 +358,7 @@ def test_polyline_point_count():
     Act: call convert().
     Assert: 'points' has exactly 3 entries.
     """
-    element = _first_of_type(
-        _svg('<polyline points="0,0 100,0 100,100"/>'), "line"
-    )
+    element = _first_of_type(_svg('<polyline points="0,0 100,0 100,100"/>'), "line")
     assert len(element["points"]) == 3
 
 
@@ -408,9 +368,7 @@ def test_polygon_last_point_closes_shape():
     Act: call convert().
     Assert: the last point in 'points' equals [0, 0] (closure back to the first vertex).
     """
-    element = _first_of_type(
-        _svg('<polygon points="0,0 100,0 100,100"/>'), "line"
-    )
+    element = _first_of_type(_svg('<polygon points="0,0 100,0 100,100"/>'), "line")
     assert element["points"][-1] == [_approx(0), _approx(0)]
 
 
@@ -420,9 +378,7 @@ def test_polygon_point_count_includes_closure():
     Act: call convert().
     Assert: 'points' has 4 entries (3 vertices + 1 closing point).
     """
-    element = _first_of_type(
-        _svg('<polygon points="0,0 100,0 100,100"/>'), "line"
-    )
+    element = _first_of_type(_svg('<polygon points="0,0 100,0 100,100"/>'), "line")
     assert len(element["points"]) == 4
 
 
@@ -433,9 +389,7 @@ def test_group_transform_applied_to_child():
     Assert: the rect's x ≈ 50, y ≈ 50.
     """
     element = _first_of_type(
-        _svg(
-            '<g transform="translate(50, 50)"><rect x="0" y="0" width="10" height="10"/></g>'
-        ),
+        _svg('<g transform="translate(50, 50)"><rect x="0" y="0" width="10" height="10"/></g>'),
         "rectangle",
     )
     assert element["x"] == _approx(50)
@@ -468,9 +422,7 @@ def test_siblings_in_group_share_group_id():
     Assert: both elements share the same groupId.
     """
     elements = _elements(
-        _svg(
-            '<g><rect x="0" y="0" width="5" height="5"/><circle cx="10" cy="10" r="5"/></g>'
-        )
+        _svg('<g><rect x="0" y="0" width="5" height="5"/><circle cx="10" cy="10" r="5"/></g>')
     )
     assert len(elements) == 2
     assert elements[0]["groupIds"] == elements[1]["groupIds"]
@@ -484,9 +436,7 @@ def test_group_fill_inherited_by_child():
     Assert: the rect inherits backgroundColor='#aabbcc' from the group.
     """
     element = _first_of_type(
-        _svg(
-            '<g fill="#aabbcc"><rect x="0" y="0" width="10" height="10"/></g>'
-        ),
+        _svg('<g fill="#aabbcc"><rect x="0" y="0" width="10" height="10"/></g>'),
         "rectangle",
     )
     assert element["backgroundColor"] == "#aabbcc"
@@ -498,9 +448,7 @@ def test_ungrouped_element_has_empty_group_ids():
     Act: call convert().
     Assert: 'groupIds' is an empty list.
     """
-    element = _first_of_type(
-        _svg('<rect x="0" y="0" width="10" height="10"/>'), "rectangle"
-    )
+    element = _first_of_type(_svg('<rect x="0" y="0" width="10" height="10"/>'), "rectangle")
     assert element["groupIds"] == []
 
 

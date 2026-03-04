@@ -4,12 +4,8 @@ import re
 import numpy as np
 from lxml.etree import _Element
 
-_TRANSFORM_FUNCTION_PATTERN: re.Pattern[str] = re.compile(
-    r"(\w+)\s*\(([^)]*)\)"
-)
-_NUMBER_PATTERN: re.Pattern[str] = re.compile(
-    r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
-)
+_TRANSFORM_FUNCTION_PATTERN: re.Pattern[str] = re.compile(r"(\w+)\s*\(([^)]*)\)")
+_NUMBER_PATTERN: re.Pattern[str] = re.compile(r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
 
 
 def _identity_matrix() -> np.ndarray:
@@ -222,9 +218,7 @@ def _get_argument(arguments: list[float], index: int, default: float) -> float:
     return arguments[index] if len(arguments) > index else default
 
 
-def _build_transform_matrix(
-    function_name: str, numeric_arguments: list[float]
-) -> np.ndarray:
+def _build_transform_matrix(function_name: str, numeric_arguments: list[float]) -> np.ndarray:
     """
     Build a 3x3 matrix for a single SVG transform function and its parsed arguments.
 
@@ -254,9 +248,7 @@ def _build_transform_matrix(
             )
         case "scale":
             scale_x = _get_argument(numeric_arguments, 0, 1.0)
-            return _scale_matrix(
-                scale_x, _get_argument(numeric_arguments, 1, scale_x)
-            )
+            return _scale_matrix(scale_x, _get_argument(numeric_arguments, 1, scale_x))
         case "rotate":
             return _rotation_matrix(
                 math.radians(_get_argument(numeric_arguments, 0, 0.0)),
@@ -317,9 +309,7 @@ def element_transform_matrix(element: "_Element") -> np.ndarray:
     )
 
 
-def accumulated_transform_matrix(
-    element: "_Element", groups: list["_Element"]
-) -> np.ndarray:
+def accumulated_transform_matrix(element: "_Element", groups: list["_Element"]) -> np.ndarray:
     """
     Return the accumulated transform through the group hierarchy and the element itself.
 
@@ -342,9 +332,7 @@ def accumulated_transform_matrix(
     return matrix @ element_transform_matrix(element)
 
 
-def transform_point(
-    point_x: float, point_y: float, matrix: np.ndarray
-) -> tuple[float, float]:
+def transform_point(point_x: float, point_y: float, matrix: np.ndarray) -> tuple[float, float]:
     """
     Apply a 3x3 affine matrix to a single 2D point.
 
@@ -384,9 +372,7 @@ def transform_points(
     list[tuple[float, float]]
         Transformed coordinates in the same order as the input.
     """
-    return [
-        transform_point(point_x, point_y, matrix) for point_x, point_y in points
-    ]
+    return [transform_point(point_x, point_y, matrix) for point_x, point_y in points]
 
 
 def transform_bounds(
