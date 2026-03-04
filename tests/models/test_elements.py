@@ -164,9 +164,7 @@ def test_build_rectangle_accepts_style_overrides():
     Act: create a rectangle with those overrides.
     Assert: the element carries the provided color strings.
     """
-    element = build_rectangle(
-        stroke_color="#ff0000", background_color="#00ff00"
-    )
+    element = build_rectangle(stroke_color="#ff0000", background_color="#00ff00")
     assert element.stroke_color == "#ff0000"
     assert element.background_color == "#00ff00"
 

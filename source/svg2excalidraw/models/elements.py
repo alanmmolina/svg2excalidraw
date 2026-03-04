@@ -86,9 +86,7 @@ class ExcalidrawTextElement(ExcalidrawElement):
     original_text: str = ""
 
 
-def _build_shape[T: ExcalidrawElement](
-    model: type[T], element_type: str
-) -> Callable[..., T]:
+def _build_shape[T: ExcalidrawElement](model: type[T], element_type: str) -> Callable[..., T]:
     """
     Return a factory that constructs ``model`` instances with a fixed ``type`` field.
 

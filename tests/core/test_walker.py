@@ -39,9 +39,7 @@ def test_walk_context_push_group_extends_stack(fresh_scene, svg_root):
     assert len(ctx.groups) == 0
 
 
-def test_walk_context_push_group_does_not_mutate_original(
-    fresh_scene, svg_root
-):
+def test_walk_context_push_group_does_not_mutate_original(fresh_scene, svg_root):
     """
     Arrange: a Context with no groups.
     Act: call push_group.
@@ -65,9 +63,7 @@ def test_walk_context_stable_group_id_same_element(fresh_scene, svg_root):
     assert ids_first == ids_second
 
 
-def test_walk_context_different_elements_get_different_ids(
-    fresh_scene, svg_root
-):
+def test_walk_context_different_elements_get_different_ids(fresh_scene, svg_root):
     """
     Arrange: two distinct group elements (different Python objects).
     Act: push each into its own context and get group IDs.
@@ -80,9 +76,7 @@ def test_walk_context_different_elements_get_different_ids(
     assert ctx_a.group_ids() != ctx_b.group_ids()
 
 
-def test_walk_context_shared_cache_preserves_ids_across_siblings(
-    fresh_scene, svg_root
-):
+def test_walk_context_shared_cache_preserves_ids_across_siblings(fresh_scene, svg_root):
     """
     Arrange: one Context; two sibling elements pushed from the same parent group.
     Act: push the same group into a new context twice (same parent scenario).
@@ -162,7 +156,9 @@ def test_walk_group_propagates_to_children(fresh_scene):
     Assert: the child rect is added to the scene.
     """
     svg = etree.fromstring(
-        '<svg xmlns="http://www.w3.org/2000/svg"><g><rect x="0" y="0" width="10" height="10"/></g></svg>'
+        b'<svg xmlns="http://www.w3.org/2000/svg">'
+        b'<g><rect x="0" y="0" width="10" height="10"/></g>'
+        b"</svg>"
     )
     ctx = Context(root=svg, scene=fresh_scene)
     walk(ctx, svg)
@@ -250,7 +246,7 @@ def test_walk_text_empty_content_skipped(fresh_scene, svg_root):
     Assert: no element is added to the scene.
     """
     ctx = Context(root=svg_root, scene=fresh_scene)
-    walk(ctx, etree.fromstring("<text x=\"0\" y=\"0\"></text>"))
+    walk(ctx, etree.fromstring('<text x="0" y="0"></text>'))
     assert len(fresh_scene.elements) == 0
 
 
